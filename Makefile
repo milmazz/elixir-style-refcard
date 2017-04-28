@@ -22,7 +22,7 @@ $(DOC)-a4.pdf: $(DOC)-a4.tex
 	rm -f $(DOC)-a4.tex $(DOC)-a4.aux $(DOC)-a4.log $(DOC)-a4.out
 
 $(DOC)-0.png: $(DOC).pdf
-	$(CONVERT) -density 100x100 +adjoin $(DOC).pdf $(DOC)-%d.png
+	$(CONVERT) -density 100x100 -background white +adjoin $(DOC).pdf $(DOC)-%d.png
 
 $(DOC)-thumb-0.png: $(DOC).pdf
-	$(CONVERT) -density 32x32 +adjoin $(DOC).pdf $(DOC)-thumb-%d.png
+	$(CONVERT) -density 32x32 -background white +adjoin $(DOC).pdf $(DOC)-thumb-%d.png

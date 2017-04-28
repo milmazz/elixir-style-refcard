@@ -8,6 +8,9 @@
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{array}
+\usepackage[sfdefault]{FiraSans}
+\usepackage{FiraMono}
+\usepackage{moresize}
 
 % To make this come out properly in landscape mode, do one of the following
 % 1.
@@ -242,7 +245,7 @@ Avoid aligning expression groups:
 \begin{tabular}{l|l}
 \textit{Bad} & \textit{Good} \\
 \begin{minipage}{.47\linewidth}
-\verbatimfont{\scriptsize}
+\verbatimfont{\ssmall}
 \begin{verbatim}
 module = env.module
 arity  = length(args)
@@ -254,7 +257,7 @@ def inspect(nil),   do: "nil"
 \end{minipage}
 &
 \begin{minipage}{.53\linewidth}
-\verbatimfont{\scriptsize}
+\verbatimfont{\ssmall}
 \begin{verbatim}
 module = env.module
 arity = length(args)
@@ -337,7 +340,7 @@ Never wrap the arguments of anonymous functions in parentheses.
 
 \begin{tabular}{l|l}
 \textit{Bad} & \textit{Good} \\
-\begin{minipage}{.45\linewidth}
+\begin{minipage}{.47\linewidth}
 \verbatimfont{\tiny}
 \begin{verbatim}
 Agent.get(pid, fn(state) -> state end)
@@ -347,7 +350,7 @@ end)
 \end{verbatim}
 \end{minipage}
 &
-\begin{minipage}{.55\linewidth}
+\begin{minipage}{.53\linewidth}
 \verbatimfont{\tiny}
 \begin{verbatim}
 Agent.get(pid, fn state -> state end)
@@ -362,7 +365,7 @@ end)
 
 Favor the pipeline operator \texttt{|>} to chain function calls together.
 
-\begin{tabular}{l|l}
+\begin{tabular}{ll}
 \textit{Bad} & \textit{Good} \\
 \begin{minipage}{.4\linewidth}
 \verbatimfont{\tiny}
@@ -586,16 +589,16 @@ patterns matching binaries.
 
 \begin{tabular}{l|l}
 \textit{Bad} & \textit{Good} \\
-\begin{minipage}{.4\linewidth}
-\verbatimfont{\tiny}
+\begin{minipage}{.51\linewidth}
+\verbatimfont{\ssmall}
 \begin{verbatim}
 <<"http://", _rest::bytes>> = input
 <<first::utf8, rest::bytes>> = input
 \end{verbatim}
 \end{minipage}
 &
-\begin{minipage}{.6\linewidth}
-\verbatimfont{\tiny}
+\begin{minipage}{.49\linewidth}
+\verbatimfont{\ssmall}
 \begin{verbatim}
 "http://" <> _rest = input
 <<first::utf8>> <> rest = input
@@ -711,7 +714,7 @@ end
 \begin{minipage}{.4\linewidth}
 Always use a leading \verb!is_! when naming guard-safe predicate macros.
 
-\verbatimfont{\tiny}
+\verbatimfont{\ssmall}
 \begin{verbatim}
 defmacro is_date(month, day) do
 #...

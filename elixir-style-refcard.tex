@@ -1,0 +1,895 @@
+\documentclass[10pt,landscape]{article}
+\usepackage{multicol}
+\usepackage{calc}
+\usepackage{ifthen}
+\usepackage[landscape]{geometry}
+\usepackage{hyperref}
+\usepackage{etoolbox}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{array}
+
+% To make this come out properly in landscape mode, do one of the following
+% 1.
+%  pdflatex elixir_style_refcard.tex
+%
+% 2.
+%  latex elixir_style_refcard.tex
+%  dvips -P pdf  -t landscape elixir_style_refcard.dvi
+%  ps2pdf elixir_style_refcard.ps
+
+% The following layout is heavily based on the ``LaTex cheat Sheet'':
+%
+% https://github.com/wch/latexsheet
+
+% To Do:
+% \listoffigures \listoftables
+% \setcounter{secnumdepth}{0}
+
+% This sets page margins to .25 inch if using letter paper, and to .5cm
+% if using A4 paper. (This probably isn't strictly necessary.)
+% If using another size paper, use default 1cm margins.
+\ifthenelse{\lengthtest { \paperwidth = 11in}}
+	{ \geometry{top=.25in,left=.25in,right=.25in,bottom=.25in} }
+	{\ifthenelse{ \lengthtest{ \paperwidth = 297mm}}
+		{\geometry{top=.5cm,left=.5cm,right=.5cm,bottom=.5cm} }
+		{\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+	}
+
+% Turn off header and footer
+\pagestyle{empty}
+
+
+% Redefine section commands to use less space
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%x
+                                {\normalfont\large\bfseries}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0mm}%
+                                {-1explus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%
+                                {\normalfont\normalsize\bfseries}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {1ex plus .2ex}%
+                                {\normalfont\small\bfseries}}
+
+\setlist[itemize]{noitemsep, nosep}
+
+% Less space in verbatim environment
+\preto{\@verbatim}{\topsep=0pt \partopsep=0pt}
+
+% Adjust fontsize for verbatim environment
+\newcommand{\verbatimfont}[1]{\renewcommand{\verbatim@font}{\ttfamily#1}}
+\makeatother
+
+% Define BibTeX command
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% Don't print section numbers
+\setcounter{secnumdepth}{0}
+
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt plus 0.5ex}
+
+% Colors
+% \definecolor{mElixir}{HTML}{4E2A8E}
+
+
+% -----------------------------------------------------------------------
+
+\begin{document}
+
+\raggedright
+\footnotesize
+\begin{multicols}{3}
+
+
+% multicol parameters
+% These lengths are set only within the two main columns
+%\setlength{\columnseprule}{0.25pt}
+\setlength{\premulticols}{1pt}
+\setlength{\postmulticols}{1pt}
+\setlength{\multicolsep}{1pt}
+\setlength{\columnsep}{2pt}
+
+\begin{center}
+     \Large{\textbf{Elixir Style reference card}} \\
+\end{center}
+
+\section{Source Code Layout}
+
+\begin{itemize}
+  \item Use two \textbf{spaces} per indentation level.  No hard tabs.
+  \item Use one expression per line, don't use semicolon \texttt{;} to separate statements and expressions.
+  \item Use spaces around default arguments \verb!\\! definition.
+  \item Add underscores to large numeric literals to improve their readability, e.g. \verb!num = 1_000_000!
+  \item Avoid trailing whitespaces.
+  \item End each file with a newline.
+\end{itemize}
+
+\subsection{Spaces in code}
+
+Use spaces around binary operators, after commas \texttt{,}, colons \texttt{:}
+and semicolons \texttt{;}. Do not put spaces around matched pairs like brackets
+\texttt{[]}, braces \texttt{\{\}}, etc. Whitespace might be (mostly) irrelevant
+to the Elixir compiler, but its proper use is the key to writing easily readable
+code.
+
+\begin{verbatim}
+sum = 1 + 2
+[first | rest] = 'three'
+{a1, a2} = {2, 3}
+Enum.join(["one", <<"two">>, sum])
+\end{verbatim}
+
+\subsection{No spaces in code}
+
+No spaces after unary operators and inside range literals, the only exception is
+the \texttt{not} operator.
+
+\begin{verbatim}
+angle = -45
+^result = Float.parse("42.01")
+2 in 1..5
+not File.exists?(path)
+\end{verbatim}
+
+\subsection{bitstring segment options}
+
+Do not put spaces around segment options definition in bitstrings.
+
+\begin{verbatim}
+# Bad
+<<102 :: unsigned-big-integer, rest :: binary>>
+<<102::unsigned - big - integer, rest::binary>>
+# Good
+<<102::unsigned-big-integer, rest::binary>>
+\end{verbatim}
+
+\subsection{Guard clauses}
+
+Indent \texttt{when} guard clauses on the same level as the function/macro
+signature in the definition they're part of. Do this only if you cannot fit the
+\texttt{when} guard on the same line as the definition.
+
+\verbatimfont{\scriptsize}
+\begin{verbatim}
+def format_error({exception, stacktrace})
+    when is_list(stacktrace) and stacktrace != [] do
+# ...
+end
+
+defmacro dngettext(domain, msgid, msgid_plural, count)
+         when is_binary(msgid) and is_binary(msgid_plural) do
+# ...
+end
+\end{verbatim}
+
+\subsection{Multi-line expression assignment}
+
+When assigning the result of a multi-line expression, do not preserve alignment
+of its parts.
+
+\begin{verbatim}
+# Bad
+{found, not_found} = Enum.map(files, &Path.expand(&1, path))
+                     |> Enum.partition(&File.exists?/1)
+
+prefix = case base do
+          :binary -> "0b"
+          :octal -> "0o"
+          :hex -> "0x"
+        end
+# Good
+{found, not_found} =
+  Enum.map(files, &Path.expand(&1, path))
+  |> Enum.partition(&File.exists?/1)
+
+prefix = case base do
+  :binary -> "0b"
+  :octal -> "0o"
+  :hex -> "0x"
+end
+\end{verbatim}
+
+\subsection{Quotes around atoms}
+
+When using atom literals that need to be quoted because they contain characters
+that are invalid in atoms (such as \texttt{:"foo-bar"}), use double quotes
+around the atom name:
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+:'foo-bar'
+:'atom number #{index}'
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+:"foo-bar"
+:"atom number #{index}"
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Trailing comma}
+\begin{tabular}{m{.8\linewidth}l}
+When dealing with lists, maps, structs, or tuples whose elements span over
+multiple lines and are on separate lines with regard to the enclosing brackets,
+it's advised to use a trailing comma even for the last element.
+&
+\begin{minipage}{.1\linewidth}
+\begin{verbatim}
+[
+  :foo,
+  :bar,
+  :baz,
+]
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Expression group alignment}
+Avoid aligning expression groups:
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.47\linewidth}
+\verbatimfont{\scriptsize}
+\begin{verbatim}
+module = env.module
+arity  = length(args)
+
+def inspect(false), do: "false"
+def inspect(true),  do: "true"
+def inspect(nil),   do: "nil"
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.53\linewidth}
+\verbatimfont{\scriptsize}
+\begin{verbatim}
+module = env.module
+arity = length(args)
+
+def inspect(false), do: "false"
+def inspect(true), do: "true"
+def inspect(nil), do: "nil"
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+The same non-alignment rule applies to \texttt{<-} and \texttt{->} clauses as
+well.
+
+\section{Syntax}
+
+\subsection{Function parentheses}
+Always use parentheses around \texttt{def} arguments, don't omit them even when
+a function has no arguments.
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+def main arg1, arg2 do
+  #...
+end
+
+def main do
+  #...
+end
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+def main(arg1, arg2) do
+  #...
+end
+
+def main() do
+  #...
+end
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Parentheses for local zero-arity functions}
+
+Parentheses are a must for \textbf{local} zero-arity function calls and
+definitions.
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+pid = self
+def new, do: %MapSet{}
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+pid = self()
+def new(), do: %MapSet{}
+config = IEx.Config.new
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+The same applies to \textbf{local} one-arity function calls in pipelines.
+
+\begin{verbatim}
+input |> String.strip() |> decode()
+\end{verbatim}
+
+\subsection{Anonymous function parentheses}
+
+Never wrap the arguments of anonymous functions in parentheses.
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.45\linewidth}
+\verbatimfont{\tiny}
+\begin{verbatim}
+Agent.get(pid, fn(state) -> state end)
+Enum.reduce(numbers, fn(number, acc) ->
+  acc + number
+end)
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.55\linewidth}
+\verbatimfont{\tiny}
+\begin{verbatim}
+Agent.get(pid, fn state -> state end)
+Enum.reduce(numbers, fn number, acc ->
+  acc + number
+end)
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Pipeline operator}
+
+Favor the pipeline operator \texttt{|>} to chain function calls together.
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\verbatimfont{\tiny}
+\begin{verbatim}
+String.downcase(String.strip(input))
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\verbatimfont{\tiny}
+\begin{verbatim}
+input |> String.strip |> String.downcase
+String.strip(input) |> String.downcase
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+Use a single level of indentation for multi-line pipelines.
+
+\begin{verbatim}
+String.strip(input)
+|> String.downcase
+|> String.slice(1, 3)
+\end{verbatim}
+
+\subsection{Needless pipeline operator}
+
+Avoid needless pipelines like the plague.
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.5\linewidth}
+\verbatimfont{\scriptsize}
+\begin{verbatim}
+result = input |> String.strip
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.5\linewidth}
+\verbatimfont{\scriptsize}
+\begin{verbatim}
+result = String.strip(input)
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Binary operators at the end of line}
+
+When writing a multi-line expression, keep binary operators at the end of each
+line. The only exception is the \texttt{|>} operator (which goes at the
+beginning of the line).
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+"No matching message.\n"
+<> "Process mailbox:\n"
+<> mailbox
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+"No matching message.\n" <>
+"Process mailbox:\n" <>
+mailbox
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{\texttt{with} indentation}
+
+Use the indentation shown below for the \texttt{with} special form:
+
+\begin{verbatim}
+with {year, ""} <- Integer.parse(year),
+     {month, ""} <- Integer.parse(month),
+     {day, ""} <- Integer.parse(day) do
+  new(year, month, day)
+else
+  _ ->
+    {:error, :invalid_format}
+end
+\end{verbatim}
+
+Always use the indentation above if there's an \texttt{else} option. If there
+isn't, the following indentation works as well:
+
+\begin{verbatim}
+with {:ok, date} <- Calendar.ISO.date(year, month, day),
+     {:ok, time} <- Time.new(hour, minute, second, microsecond),
+     do: new(date, time)
+\end{verbatim}
+
+\subsection{\texttt{for} indentation}
+
+\begin{verbatim}
+for {alias, _module} <- aliases_from_env(server),
+    [name] = Module.split(alias),
+    starts_with?(name, hint),
+    into: [] do
+  %{kind: :module, type: :alias, name: name}
+end
+\end{verbatim}
+
+If the body of the \texttt{do} block is short, the following indentation works
+as well:
+
+\begin{verbatim}
+for partition <- 0..(partitions - 1),
+    pair <- safe_lookup(registry, partition, key),
+    into: [],
+    do: pair
+\end{verbatim}
+
+\subsection{Never use \texttt{unless} with \texttt{else}}
+
+Rewrite these with the positive case first.
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.45\linewidth}
+\begin{verbatim}
+unless Enum.empty?(coll) do
+  :ok
+else
+  :error
+end
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.55\linewidth}
+\begin{verbatim}
+if Enum.empty?(coll) do
+  :error
+else
+  :ok
+end
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{No \texttt{nil}-\texttt{else}}
+
+Omit \texttt{else} option in \texttt{if} and \texttt{unless} clauses if it
+returns \texttt{nil}.
+
+\begin{verbatim}
+# Bad
+if byte_size(data) > 0, do: data, else: nil
+
+# Good
+if byte_size(data) > 0, do: data
+\end{verbatim}
+
+\subsection{\texttt{true} in \texttt{cond}}
+
+If you have an always-matching clause in the \texttt{cond} special form, use
+\texttt{true} as its condition.
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+cond do
+  char in ?0..?9 ->
+    char - ?0
+  char in ?A..?Z ->
+    char - ?A + 10
+  :other ->
+    char - ?a + 10
+end
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+cond do
+  char in ?0..?9 ->
+    char - ?0
+  char in ?A..?Z ->
+    char - ?A + 10
+  true ->
+    char - ?a + 10
+end
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Boolean Operators}
+
+Never use \texttt{||}, \verb!&&! and \texttt{!} for strictly boolean checks.
+Use these operators only if any of the arguments are non-boolean.
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\verbatimfont{\tiny}
+\begin{verbatim}
+is_atom(name) && name != nil
+is_binary(task) || is_atom(task)
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\verbatimfont{\tiny}
+\begin{verbatim}
+is_atom(name) and name != nil
+is_binary(task) or is_atom(task)
+line && line != 0
+file || "sample.exs"
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Patterns matching binaries}
+
+Favor the binary concatenation operator \texttt{<>} over bitstring syntax for
+patterns matching binaries.
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\verbatimfont{\tiny}
+\begin{verbatim}
+<<"http://", _rest::bytes>> = input
+<<first::utf8, rest::bytes>> = input
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\verbatimfont{\tiny}
+\begin{verbatim}
+"http://" <> _rest = input
+<<first::utf8>> <> rest = input
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Use uppercase in definition of hex literals}
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+<<0xef, 0xbb, 0xbf>>
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+<<0xEF, 0xBB, 0xBF>>
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\section{Naming}
+
+\begin{itemize}
+  \item Use \verb!snake_case! for naming directories and files, e.g.
+\verb!lib/my_app/task_server.ex!.
+  \item Avoid using one-letter variable names.
+  \item Use \verb!snake_case! for atoms, functions, variables and module attributes.
+\end{itemize}
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+:"no match"
+:Error
+:badReturn
+
+fileName = "sample.txt"
+
+@_VERSION "0.0.1"
+
+def readFile(path) do
+  #...
+end
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+:no_match
+:error
+:bad_return
+
+file_name = "sample.txt"
+
+@version "0.0.1"
+
+def read_file(path) do
+  #...
+end
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Use CamelCase for module names}
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+defmodule :appStack do
+#...
+end
+
+defmodule App_Stack do
+#...
+end
+
+defmodule Appstack do
+#...
+end
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+defmodule AppStack do
+#...
+end
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Predicate function names}
+
+\begin{tabular}{ll}
+\begin{minipage}{.5\linewidth}
+The names of predicate functions (a function that return a boolean value) should
+have a trailing question mark \texttt{?} rather than a leading \verb!has_! or
+similar.
+
+\begin{verbatim}
+def leap?(year) do
+#...
+end
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.4\linewidth}
+Always use a leading \verb!is_! when naming guard-safe predicate macros.
+
+\verbatimfont{\tiny}
+\begin{verbatim}
+defmacro is_date(month, day) do
+#...
+end
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\section{Comments}
+
+\begin{itemize}
+  \item Write self-documenting code and ignore the rest of this section.
+        \textbf{Seriously!}
+  \item Use one space between the leading \verb!#! character of the comment
+        and the text of the comment.
+  \item Avoid superfluous comments. e.g. \verb!String.first(input) # Get first grapheme!
+\end{itemize}
+
+\section{Modules}
+
+\subsection{Module Layout}
+
+Use a consistent structure when calling \texttt{use}/\texttt{import}/\texttt{alias}/\texttt{require}:
+call them in this order and group multiple calls to each of them.
+
+\begin{verbatim}
+use GenServer
+
+import Bitwise
+import Kernel, except: [length: 1]
+
+alias Mix.Utils
+alias MapSet, as: Set
+
+require Logger
+\end{verbatim}
+
+\subsection{Use \texttt{\_\_MODULE\_\_} to reference current module}
+
+\begin{verbatim}
+# Bad
+:ets.new(Kernel.LexicalTracker, [:named_table])
+GenServer.start_link(Module.LocalsTracker, nil, [])
+
+# Good
+:ets.new(__MODULE__, [:named_table])
+GenServer.start_link(__MODULE__, nil, [])
+\end{verbatim}
+
+\subsection{Regular expressions are the last resort}
+
+Pattern matching and \texttt{String} module are things to start with.
+
+\begin{verbatim}
+# Bad
+Regex.run(~r/#(\d{2})(\d{2})(\d{2})/, color)
+Regex.match?(~r/(email|password)/, input)
+
+# Good
+<<?#, p1::2-bytes, p2::2-bytes, p3::2-bytes>> = color
+String.contains?(input, ["email", "password"])
+\end{verbatim}
+
+\subsection{Use non-capturing RegEx}
+
+\ldots when you don't use the captured result.
+
+\begin{verbatim}
+~r/(?:post|zip )code: (\d+)/
+\end{verbatim}
+
+\subsection{Caret and dollar RegEx}
+
+Be careful with \verb!^! and \verb!$! as they match start and end of the
+\textbf{line} respectively. If you want to match the \textbf{whole} string use:
+\verb!\A! and \verb!\z! (not to be confused
+with \verb!\Z! which is the equivalent of
+\verb!\n?\z!).
+
+\section{Structs}
+
+\subsection{\texttt{defstruct} with default fields}
+
+When calling \texttt{defstruct/1}, don't explicitly specify \texttt{nil} for
+fields that default to \texttt{nil}.
+
+\begin{verbatim}
+# Bad
+defstruct first_name: nil, last_name: nil, admin?: false
+
+# Good
+defstruct [:first_name, :last_name, admin?: false]
+\end{verbatim}
+
+\section{Exceptions}
+
+\subsection{Make exception names end with a trailing \texttt{Error}}
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+BadResponse
+ResponseException
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+ResponseError
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Use non-capitalized error messages}
+
+\ldots when raising exceptions, with no trailing punctuation.
+
+\begin{verbatim}
+# Bad
+raise ArgumentError, "Malformed payload."
+
+# Good
+raise ArgumentError, "malformed payload"
+\end{verbatim}
+
+There is one exception to the rule - always capitalize Mix error messages.
+
+\begin{verbatim}
+Mix.raise "Could not find dependency"
+\end{verbatim}
+
+\section{Typespecs}
+
+\subsection{Never use parens on zero-arity types}
+
+\begin{verbatim}
+# Bad
+@spec start_link(module(), term(), Keyword.t()) :: on_start()
+
+# Good
+@spec start_link(module, term, Keyword.t) :: on_start
+\end{verbatim}
+
+\section{ExUnit}
+
+\subsection{ExUnit assertion side}
+
+When asserting (or refuting) something with comparison operators (such as
+\texttt{==}, \texttt{<}, \texttt{>=}, and similar), put the  expression being
+tested on the left-hand side of the operator and the value you're testing
+against on the right-hand side.
+
+\begin{verbatim}
+# Bad
+assert "héllo" == Atom.to_string(:"héllo")
+
+# Good
+assert Atom.to_string(:"héllo") == "héllo"
+\end{verbatim}
+
+When using the match operator \texttt{=}, put the pattern on the left-hand side
+(as it won't work otherwise).
+
+\begin{verbatim}
+assert {:error, _reason} = File.stat("./non_existent_file")
+\end{verbatim}
+
+\hfill
+\hrule
+\hfill
+\scriptsize
+
+This reference card is an adaptation of the \href{https://github.com/lexmag/elixir-style-guide}{``Elixir Style Guide''},
+it was created by Milton Mazzarri and is licensed under the
+\href{https://creativecommons.org/licenses/by/4.0/}{CC BY 4.0 license}. \href{http://github.com/milmazz/elixir-style-refcard/}{http://github.com/milmazz/elixir-style-refcard/}
+
+You can find the original ``Elixir Style Guide'' by Aleksei Magusev here: \href{https://github.com/lexmag/elixir-style-guide}{https://github.com/lexmag/elixir-style-guide}
+
+\end{multicols}
+\end{document}

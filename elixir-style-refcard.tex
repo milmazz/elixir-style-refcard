@@ -172,6 +172,29 @@ defmacro dngettext(domain, msgid, msgid_plural, count)
 end
 \end{verbatim}
 
+\subsection{Quotes around atoms}
+
+When using atom literals that need to be quoted because they contain characters
+that are invalid in atoms (such as \texttt{:"foo-bar"}), use double quotes
+around the atom name:
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+:'foo-bar'
+:'atom number #{index}'
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+:"foo-bar"
+:"atom number #{index}"
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
 \subsection{Multi-line expression assignment}
 
 When assigning the result of a multi-line expression, do not preserve alignment
@@ -198,29 +221,6 @@ prefix = case base do
   :hex -> "0x"
 end
 \end{verbatim}
-
-\subsection{Quotes around atoms}
-
-When using atom literals that need to be quoted because they contain characters
-that are invalid in atoms (such as \texttt{:"foo-bar"}), use double quotes
-around the atom name:
-
-\begin{tabular}{l|l}
-\textit{Bad} & \textit{Good} \\
-\begin{minipage}{.4\linewidth}
-\begin{verbatim}
-:'foo-bar'
-:'atom number #{index}'
-\end{verbatim}
-\end{minipage}
-&
-\begin{minipage}{.6\linewidth}
-\begin{verbatim}
-:"foo-bar"
-:"atom number #{index}"
-\end{verbatim}
-\end{minipage}
-\end{tabular}
 
 \subsection{Trailing comma}
 \begin{tabular}{m{.8\linewidth}l}
@@ -305,62 +305,6 @@ end
 \end{minipage}
 \end{tabular}
 
-\subsection{Parentheses for local zero-arity functions}
-
-Parentheses are a must for \textbf{local} zero-arity function calls and
-definitions.
-
-\begin{tabular}{l|l}
-\textit{Bad} & \textit{Good} \\
-\begin{minipage}{.4\linewidth}
-\begin{verbatim}
-pid = self
-def new, do: %MapSet{}
-\end{verbatim}
-\end{minipage}
-&
-\begin{minipage}{.6\linewidth}
-\begin{verbatim}
-pid = self()
-def new(), do: %MapSet{}
-config = IEx.Config.new
-\end{verbatim}
-\end{minipage}
-\end{tabular}
-
-The same applies to \textbf{local} one-arity function calls in pipelines.
-
-\begin{verbatim}
-input |> String.strip() |> decode()
-\end{verbatim}
-
-\subsection{Anonymous function parentheses}
-
-Never wrap the arguments of anonymous functions in parentheses.
-
-\begin{tabular}{l|l}
-\textit{Bad} & \textit{Good} \\
-\begin{minipage}{.47\linewidth}
-\verbatimfont{\tiny}
-\begin{verbatim}
-Agent.get(pid, fn(state) -> state end)
-Enum.reduce(numbers, fn(number, acc) ->
-  acc + number
-end)
-\end{verbatim}
-\end{minipage}
-&
-\begin{minipage}{.53\linewidth}
-\verbatimfont{\tiny}
-\begin{verbatim}
-Agent.get(pid, fn state -> state end)
-Enum.reduce(numbers, fn number, acc ->
-  acc + number
-end)
-\end{verbatim}
-\end{minipage}
-\end{tabular}
-
 \subsection{Pipeline operator}
 
 Favor the pipeline operator \texttt{|>} to chain function calls together.
@@ -408,6 +352,94 @@ result = input |> String.strip
 \verbatimfont{\scriptsize}
 \begin{verbatim}
 result = String.strip(input)
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Parentheses for local zero-arity functions}
+
+Parentheses are a must for \textbf{local} zero-arity function calls and
+definitions.
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+pid = self
+def new, do: %MapSet{}
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+pid = self()
+def new(), do: %MapSet{}
+config = IEx.Config.new
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+The same should be done for \textbf{remote} zero-arity function calls:
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+Mix.env
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+Mix.env()
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+This rule also applies to one-arity function calls (both local and remote) in pipelines:
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.4\linewidth}
+\begin{verbatim}
+input
+|> String.strip
+|> decode
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.6\linewidth}
+\begin{verbatim}
+input
+|> String.strip()
+|> decode()
+\end{verbatim}
+\end{minipage}
+\end{tabular}
+
+\subsection{Anonymous function parentheses}
+
+Never wrap the arguments of anonymous functions in parentheses.
+
+\begin{tabular}{l|l}
+\textit{Bad} & \textit{Good} \\
+\begin{minipage}{.47\linewidth}
+\verbatimfont{\tiny}
+\begin{verbatim}
+Agent.get(pid, fn(state) -> state end)
+Enum.reduce(numbers, fn(number, acc) ->
+  acc + number
+end)
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{.53\linewidth}
+\verbatimfont{\tiny}
+\begin{verbatim}
+Agent.get(pid, fn state -> state end)
+Enum.reduce(numbers, fn number, acc ->
+  acc + number
+end)
 \end{verbatim}
 \end{minipage}
 \end{tabular}
